@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocuFlow | Advanced PDF Editor & Document Builder</title>
+    <meta name="description" content="A powerful, modern PDF editor and document creator with advanced customization tools.">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- PDF-Lib -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+</head>
+<body data-theme="light">
+    <!-- Aesthetic Background Blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <!-- Top Toolbar -->
+    <header class="top-toolbar">
+        <div class="toolbar-group">
+            <div class="logo">
+                <i data-lucide="file-text"></i>
+                DocuFlow
+            </div>
+            <div class="divider" style="width: 1px; height: 32px; background: var(--border); margin: 0 16px;"></div>
+            <button class="tool-btn" id="tool-select" title="Select Tool (V)">
+                <i data-lucide="mouse-pointer-2"></i>
+            </button>
+            <button class="tool-btn" id="tool-text" title="Text Tool (T)">
+                <i data-lucide="type"></i>
+            </button>
+            <button class="tool-btn" id="tool-shape" title="Shape Tool (S)">
+                <i data-lucide="square"></i>
+            </button>
+            <button class="tool-btn" id="tool-image" title="Insert Image (I)">
+                <i data-lucide="image"></i>
+            </button>
+            <input type="file" id="image-upload" hidden accept="image/*">
+            <button class="tool-btn" id="tool-draw" title="Draw Tool (D)">
+                <i data-lucide="pencil"></i>
+            </button>
+            <button class="tool-btn" id="tool-signature" title="Signature (G)">
+                <i data-lucide="pen-tool"></i>
+            </button>
+        </div>
+
+        <div class="toolbar-group">
+            <button class="btn" id="undo-btn">
+                <i data-lucide="undo-2"></i>
+            </button>
+            <button class="btn" id="redo-btn">
+                <i data-lucide="redo-2"></i>
+            </button>
+            <div class="divider" style="width: 1px; height: 32px; background: var(--border); margin: 0 8px;"></div>
+            <button class="btn" id="theme-toggle">
+                <i data-lucide="sun"></i>
+            </button>
+            <button class="btn btn-primary" id="export-btn">
+                <i data-lucide="download"></i>
+                Export PDF
+            </button>
+        </div>
+    </header>
+
+    <main class="app-container">
+        <!-- Left Sidebar: Thumbnails -->
+        <aside class="left-sidebar">
+            <div class="sidebar-header">Pages</div>
+            <div class="thumbnail-container" id="thumbnail-list">
+                <!-- Thumbnails will be injected here -->
+                <div class="thumbnail" style="display: flex; align-items: center; justify-content: center; opacity: 0.5;">
+                    <i data-lucide="plus" size="32"></i>
+                </div>
+            </div>
+            <div class="sidebar-footer" style="padding: 16px; border-top: 1px solid var(--border);">
+                <button class="btn" style="width: 100%;" id="add-page-btn">
+                    <i data-lucide="plus"></i>
+                    Add Page
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <section class="editor-workspace" id="workspace">
+            <!-- PDF Pages will be rendered here -->
+            <div id="pages-container">
+                <div style="text-align: center; margin-top: 100px; color: var(--text-muted);">
+                    <i data-lucide="upload-cloud" size="48" style="margin-bottom: 16px;"></i>
+                    <h3>Upload a PDF to get started</h3>
+                    <p>or create a document from scratch</p>
+                    <input type="file" id="file-upload" hidden accept="application/pdf">
+                    <button class="btn btn-primary" style="margin-top: 24px;" onclick="document.getElementById('file-upload').click()">
+                        Choose File
+                    </button>
+                </div>
+            </div>
+
+            <!-- Floating Zoom Controls -->
+            <div class="floating-zoom">
+                <button class="tool-btn" id="zoom-out"><i data-lucide="minus"></i></button>
+                <span id="zoom-level">100%</span>
+                <button class="tool-btn" id="zoom-in"><i data-lucide="plus"></i></button>
+            </div>
+        </section>
+
+        <!-- Right Panel: Properties -->
+        <aside class="right-panel">
+            <div class="panel-section">
+                <div class="panel-title">Properties</div>
+                <div id="properties-content">
+                    <p style="color: var(--text-muted); font-size: 0.875rem;">Select an element to edit properties</p>
+                </div>
+            </div>
+            <div class="panel-section">
+                <div class="panel-title">Layers</div>
+                <div id="layers-list" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Layer items will be injected here -->
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Custom Context Menus & Modals -->
+    <div id="signature-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create Signature</h3>
+                <button class="tool-btn" id="close-signature"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <canvas id="signature-pad" width="400" height="200" style="border: 2px dashed var(--border); border-radius: 8px; background: white; cursor: crosshair;"></canvas>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 12px; margin-top: 16px;">
+                <button class="btn" id="clear-signature">Clear</button>
+                <button class="btn btn-primary" id="save-signature" style="flex: 1;">Add to Page</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/app.js"></script>
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
